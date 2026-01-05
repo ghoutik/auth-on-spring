@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Авторизація / Реєстрація</title>
+    <style>
+        body {
+          font-family: Arial, sans-serif;
+          background: linear-gradient(135deg, #74b9ff, #a29bfe);
+          height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0;
+        }
+
+        .container {
+          background: white;
+          border-radius: 16px;
+          box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+          width: 350px;
+          padding: 20px;
+          text-align: center;
+          transition: 0.3s;
+        }
+
+        h2 {
+          color: #2d3436;
+          margin-bottom: 10px;
+        }
+
+        input {
+          width: 85%;
+          padding: 10px;
+          margin: 8px 0;
+          border: 1px solid #dfe6e9;
+          border-radius: 8px;
+          outline: none;
+          font-size: 14px;
+        }
+
+        button {
+          background: #0984e3;
+          color: white;
+          border: none;
+          border-radius: 8px;
+          padding: 10px 20px;
+          cursor: pointer;
+          transition: 0.2s;
+          width: 90%;
+        }
+
+        button:hover {
+          background: #74b9ff;
+        }
+
+        .switch {
+          margin-top: 12px;
+          font-size: 14px;
+          color: #636e72;
+          cursor: pointer;
+        }
+
+        .switch:hover {
+          text-decoration: underline;
+        }
+
+        .hidden {
+          display: none;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div id="loginForm">
+        <h2>Увійти</h2>
+        <input type="text" id="loginUsername" placeholder="Логін">
+        <input type="password" id="loginPassword" placeholder="Пароль">
+        <button onclick="login()">Увійти</button>
+        <p class="switch" onclick="toggleForms()">Немає акаунта? Зареєструйтесь</p>
+    </div>
+
+    <div id="registerForm" class="hidden">
+        <h2>Реєстрація</h2>
+        <input type="text" id="regUsername" placeholder="Логін">
+        <input type="email" id="regEmail" placeholder="Email">
+        <input type="password" id="regPassword" placeholder="Пароль">
+        <button onclick="register()">Зареєструватись</button>
+        <p class="switch" onclick="toggleForms()">Вже маєте акаунт? Увійдіть</p>
+    </div>
+
+    <div id="toast" style="
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #e74c3c;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    display: none;
+    font-family: Arial, sans-serif;
+    z-index: 1000;
+"></div>
+</div>
+
+<script>
+    function showToast(message) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.style.display = 'block';
+    toast.style.opacity = 1;
+
+    setTimeout(() => {
+        toast.style.transition = "opacity 0.5s";
+        toast.style.opacity = 0;
+        setTimeout(() => toast.style.display = 'none', 500);
+    }, 3000);
+}
+
+    function toggleForms() {
+      document.getElementById('loginForm').classList.toggle('hidden');
+      document.getElementById('registerForm').classList.toggle('hidden');
+    }
+
+  async function login() {
+  const username = document.getElementById('loginUsername').value;
+  const password = document.getElementById('loginPassword').value;
+
+  const res = await fetch('/api/login', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ username, password })
+  });
+
+  const isValid = await res.json();
+
+  if (isValid) {
+    window.location.href = "success.html";
+  } else {
+    showToast("Невірний логін або пароль");
+  }
+}
+
+
+    async function register() {
+        const username = document.getElementById('regUsername').value;
+        const email = document.getElementById('regEmail').value;
+        const password = document.getElementById('regPassword').value;
+
+        try {
+            const res = await fetch('/api/register', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username, email, password})
+            });
+            if (res.ok) {
+                showToast("Реєстація успішна");
+
+                document.getElementById('regUsername').value = "";
+                document.getElementById('regEmail').value = "";
+                document.getElementById('regPassword').value = "";
+
+                setTimeout(() => toggleForms(), 2000);
+
+            } else {
+                const text = await res.text();
+                showToast("Помилка: " + text);
+            }
+        } catch (err) {
+            showToast("Помилка:" + err.message);
+        }
+    }
+</script>
+</body>
+</html>

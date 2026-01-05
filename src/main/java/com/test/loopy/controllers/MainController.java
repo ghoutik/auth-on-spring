@@ -1,0 +1,12 @@
+package com.test.loopy.controllers;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+
+@Controller
+public class MainController{
+    @GetMapping("/")
+    public String redirect(){
+        return "redirect:/auth.html";
+    }
+}
